@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Taraftar Arena 26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;800&family=Chivo+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --grass1:#2E7D33;
+  --grass2:#27702C;
+  --panel:rgba(6,24,12,.86);
+  --panel-2:rgba(10,34,18,.92);
+  --bord:rgba(255,255,255,.16);
+  --chalk:#F2F7F0;
+  --chalk-dim:#BFD6C4;
+  --amber:#FFC83D;
+  --signal:#FF4D42;
+  --display:'Saira Condensed', system-ui, sans-serif;
+  --mono:'Chivo Mono', ui-monospace, monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:repeating-linear-gradient(90deg, var(--grass1) 0 72px, var(--grass2) 72px 144px);
+  color:var(--chalk);
+  font-family:var(--display);
+  overflow-x:hidden;
+}
+.pl{position:fixed;pointer-events:none;z-index:0;border-color:rgba(255,255,255,.30)!important}
+.pl.frame{inset:10px;border:2px solid}
+.pl.mid{left:10px;right:10px;top:50%;height:0;border-top:2px solid}
+.pl.circle{top:50%;left:50%;transform:translate(-50%,-50%);width:min(38vmin,260px);height:min(38vmin,260px);border:2px solid;border-radius:50%}
+.pl.spot{top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;background:rgba(255,255,255,.30);border-radius:50%}
+
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+img{user-select:none}
+
+.fc{border-radius:50%;object-fit:cover;background:#234;border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 2px 6px rgba(0,0,0,.35);display:block;flex-shrink:0}
+
+/* ---------- ÜST BAR ---------- */
+header{
+  position:sticky;top:0;z-index:50;
+  background:var(--panel-2);backdrop-filter:blur(8px);
+  border-bottom:2px solid var(--bord);
+  padding:10px 14px 0;
+}
+.brand{display:flex;align-items:baseline;gap:8px;justify-content:center}
+.brand h1{font-size:clamp(22px,5.5vw,30px);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.brand h1 .y{color:var(--amber)}
+.brand .live{
+  font-family:var(--mono);font-size:10px;font-weight:700;color:var(--signal);
+  display:inline-flex;align-items:center;gap:4px;letter-spacing:.12em;
+}
+.live .dot{width:7px;height:7px;border-radius:50%;background:var(--signal);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.tabs{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.tabs button{
+  flex:1;max-width:240px;padding:9px 6px 7px;
+  font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--chalk-dim);border-bottom:3px solid transparent;transition:color .15s;
+}
+.tabs button.on{color:var(--amber);border-bottom-color:var(--amber)}
+
+main{max-width:1080px;margin:0 auto;padding:14px 12px 80px;position:relative;z-index:1}
+.view{display:none}
+.view.on{display:block}
+.strip{display:flex;gap:8px;margin-bottom:14px}
+.strip .box{
+  flex:1;background:var(--panel);border:1px solid var(--bord);border-radius:10px;
+  padding:8px 10px;text-align:center;min-width:0;
+}
+.strip .box .k{font-size:11px;letter-spacing:.14em;color:var(--chalk-dim);text-transform:uppercase}
+.strip .box .v{font-family:var(--mono);font-size:clamp(14px,4vw,21px);font-weight:700;color:var(--amber);
+  display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;overflow:hidden}
+.strip .box .v img{width:20px;height:20px}
+
+/* ---------- BAYRAK YARIŞI: çerçevesiz daireler, 3'lü ---------- */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 6px}
+@media (min-width:720px){.grid{grid-template-columns:repeat(6,1fr)}}
+@media (min-width:1000px){.grid{grid-template-columns:repeat(8,1fr)}}
+.gItem{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 0 2px;user-select:none;
+  transition:transform .08s;
+}
+.gItem:active{transform:scale(.92)}
+.gItem .fc{width:clamp(58px,22vw,84px);height:clamp(58px,22vw,84px)}
+.gItem .rank{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:10px;font-weight:700;color:var(--chalk-dim);
+  background:rgba(0,0,0,.68);border:1px solid var(--bord);border-radius:999px;padding:0 7px;line-height:15px;
+}
+.gItem.r1 .rank,.gItem.r2 .rank,.gItem.r3 .rank{color:var(--amber);border-color:var(--amber)}
+.gItem.r1 .fc{border-color:var(--amber);box-shadow:0 0 16px rgba(255,200,61,.55)}
+.gItem .cnt{
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber);
+  background:rgba(0,0,0,.55);border-radius:999px;padding:0 8px;line-height:18px;
+}
+.gItem .mine{font-family:var(--mono);font-size:9px;color:var(--chalk-dim);height:11px}
+
+.pop{
+  position:absolute;left:50%;top:30%;pointer-events:none;z-index:5;
+  font-family:var(--mono);font-weight:700;font-size:15px;color:var(--amber);
+  text-shadow:0 1px 2px rgba(0,0,0,.6);
+  animation:rise .6s ease-out forwards;
+}
+@keyframes rise{
+  from{transform:translate(-50%,0);opacity:1}
+  to{transform:translate(-50%,-46px);opacity:0}
+}
+
+/* ---------- BÜYÜK BAYRAK BUTONU ---------- */
+.flagbtn{
+  width:clamp(108px,30vw,176px);height:clamp(108px,30vw,176px);border-radius:50%;
+  position:relative;padding:0;
+  border:4px solid rgba(255,255,255,.85);
+  box-shadow:0 4px 14px rgba(0,0,0,.4);
+  overflow:hidden;user-select:none;
+  transition:transform .07s, border-color .15s, box-shadow .15s;
+}
+.flagbtn img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.flagbtn:active{transform:scale(.93)}
+.flagbtn.lead{border-color:var(--amber);box-shadow:0 0 22px rgba(255,200,61,.45)}
+.flagbtn .cnt{
+  position:absolute;left:50%;bottom:9%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:clamp(13px,3.4vw,18px);font-weight:700;color:var(--amber);
+  background:rgba(0,0,0,.62);border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:1px 9px;
+  white-space:nowrap;
+}
+.tapBtn{
+  font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:#173015;background:var(--amber);border-radius:999px;padding:7px 16px;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.tapBtn:active{transform:scale(.94)}
+
+/* ---------- GÜNÜN KAPIŞMASI ---------- */
+.fixchips{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
+.fixchips button{
+  flex:0 0 auto;display:flex;align-items:center;gap:5px;
+  background:var(--panel);border:1px solid var(--bord);border-radius:999px;
+  padding:6px 13px;font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--chalk-dim);
+}
+.fixchips button img{width:18px;height:18px}
+.fixchips button.on{border-color:var(--amber);color:var(--amber)}
+.kicktime{font-family:var(--mono);font-size:11px;margin-left:3px;opacity:.85}
+
+.battle{
+  background:var(--panel);border:1px solid var(--bord);border-radius:16px;
+  padding:18px 10px 14px;position:relative;overflow:hidden;
+}
+.duel{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;position:relative;z-index:1}
+.side{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.side .tname{font-size:clamp(14px,3.6vw,18px);font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+
+.vs{
+  flex:0 0 auto;align-self:center;display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-weight:800;font-size:clamp(18px,5vw,26px);color:var(--signal);letter-spacing:.06em;
+  z-index:1;padding:6px 4px;text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+.vs .spark{font-size:clamp(20px,6vw,30px);transition:transform .1s}
+.vs .spark.hitL{transform:rotate(-14deg) scale(1.2)}
+.vs .spark.hitR{transform:rotate(14deg) scale(1.2)}
+
+.tug{margin:16px 6px 4px;position:relative;z-index:1}
+.tug .bar{
+  height:18px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid var(--bord);
+  overflow:hidden;display:flex;
+}
+.tug .fillL{height:100%;background:linear-gradient(90deg,#E2483D,#FFC83D);transition:width .35s ease}
+.tug .fillR{height:100%;flex:1;background:linear-gradient(90deg,#1F6FB2,#3FA9F5);opacity:.9}
+.tug .pcts{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;font-weight:700;margin-top:4px;color:var(--chalk-dim)}
+.tug .pcts .l{color:var(--amber)} .tug .pcts .r{color:#A8DCFF}
+
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.panel{background:var(--panel);border:1px solid var(--bord);border-radius:12px;padding:10px}
+.panel h3{
+  font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--chalk-dim);margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.panel h3 img{width:18px;height:18px}
+.panel ol{list-style:none;display:flex;flex-direction:column;gap:3px}
+.panel li{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:13px;padding:3px 6px;border-radius:6px}
+.panel li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:5px;min-width:0}
+.panel li .nm img{width:16px;height:16px}
+.panel li .sc{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber);flex-shrink:0}
+.panel li.me,.panel li.cur{background:rgba(255,200,61,.14);outline:1px solid rgba(255,200,61,.45)}
+.panel li .idx{color:var(--chalk-dim);font-family:var(--mono);font-size:11px;margin-right:2px;flex-shrink:0}
+.panel .scroll{max-height:380px;overflow-y:auto;padding-right:2px}
+
+.mePanel{grid-column:1 / -1;text-align:center}
+.mePanel .uname{font-size:20px;font-weight:800;letter-spacing:.05em;color:var(--amber)}
+.meStats{display:flex;justify-content:center;gap:18px;margin-top:6px;flex-wrap:wrap}
+.meStats div{font-family:var(--mono);font-size:13px;color:var(--chalk-dim)}
+.meStats b{display:block;font-size:19px;color:var(--chalk)}
+
+.next{margin-top:12px;text-align:center;font-size:13px;color:var(--chalk);font-family:var(--mono);
+  background:var(--panel);border:1px solid var(--bord);border-radius:10px;padding:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.next b{color:var(--amber)}
+.next img{width:18px;height:18px}
+
+/* ---------- ÜLKE DETAYI ---------- */
+.backBtn{
+  display:inline-flex;align-items:center;gap:6px;margin-bottom:12px;
+  font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--chalk-dim);background:var(--panel);border:1px solid var(--bord);
+  border-radius:999px;padding:7px 14px;
+}
+.cHero{
+  background:var(--panel);border:1px solid var(--bord);border-radius:16px;
+  padding:18px 12px 16px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.cHero .flagbtn{width:clamp(140px,40vw,200px);height:clamp(140px,40vw,200px)}
+.cHero .cname{font-size:clamp(20px,5.5vw,28px);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.cHero .crank{font-family:var(--mono);font-size:13px;color:var(--chalk-dim)}
+.cHero .crank b{color:var(--amber)}
+.cHero .bigCnt{font-family:var(--mono);font-size:clamp(22px,6vw,32px);font-weight:700;color:var(--amber)}
+.cHero .bigCnt small{font-size:11px;color:var(--chalk-dim);display:block;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+
+@media (max-width:560px){
+  .panels{grid-template-columns:1fr}
+  .mePanel{grid-column:auto}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+}
+
+/* ---------- MODAL ---------- */
+.veil{
+  position:fixed;inset:0;background:rgba(4,16,8,.88);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
+}
+.veil.off{display:none}
+.modal{
+  width:100%;max-width:360px;background:var(--panel-2);border:1px solid var(--bord);
+  border-radius:16px;padding:24px 20px;text-align:center;
+}
+.modal .flag{font-size:42px}
+.modal h2{font-size:24px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin:6px 0 2px}
+.modal h2 .y{color:var(--amber)}
+.modal p{font-size:14px;color:var(--chalk-dim);line-height:1.45;margin-bottom:14px}
+.modal input{
+  width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--bord);
+  background:rgba(0,0,0,.4);color:var(--chalk);font-family:var(--mono);font-size:15px;
+  text-align:center;outline:none;
+}
+.modal input:focus{border-color:var(--amber)}
+.modal .go{
+  width:100%;margin-top:12px;padding:12px;border-radius:10px;background:var(--amber);
+  color:#173015;font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+}
+.modal .hint{font-family:var(--mono);font-size:11px;color:var(--chalk-dim);margin-top:10px}
+
+footer{
+  position:fixed;bottom:0;left:0;right:0;text-align:center;z-index:50;
+  font-family:var(--mono);font-size:10px;color:var(--chalk-dim);
+  background:var(--panel-2);padding:5px;border-top:1px solid var(--bord);letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+
+<div class="pl frame"></div>
+<div class="pl mid"></div>
+<div class="pl circle"></div>
+<div class="pl spot"></div>
+
+<div class="veil" id="veil">
+  <div class="modal">
+    <span class="flag">⚽</span>
+    <h2>Taraftar <span class="y">Arena</span> 26</h2>
+    <p>Bayrağına tıkla, ülkeni zirveye taşı. Sıralamada görünmek için bir takma ad seç.</p>
+    <input id="unameIn" maxlength="16" placeholder="takma adın" autocomplete="off">
+    <button class="go" id="goBtn">Arenaya Gir</button>
+    <div class="hint">kayıt yok · şifre yok · sadece parmak hızı</div>
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    <h1>Taraftar <span class="y">Arena</span> 26</h1>
+    <span class="live"><span class="dot"></span>CANLI</span>
+  </div>
+  <nav class="tabs">
+    <button id="tabGrid" class="on">Bayrak Yarışı</button>
+    <button id="tabBattle">Günün Kapışması</button>
+  </nav>
+</header>
+
+<main>
+  <section class="view on" id="viewGrid">
+    <div class="strip">
+      <div class="box"><div class="k">Toplam Tık</div><div class="v" id="totalAll">0</div></div>
+      <div class="box"><div class="k">Senin Tıkların</div><div class="v" id="totalMine">0</div></div>
+      <div class="box"><div class="k">Lider</div><div class="v" id="leaderName">–</div></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="view" id="viewCountry">
+    <button class="backBtn" id="backBtn">← Bayrak Yarışı</button>
+
+    <div class="cHero">
+      <button class="flagbtn" id="cFlagBtn">
+        <img id="cFlag" alt="">
+        <span class="cnt" id="cCntBadge">0</span>
+      </button>
+      <div class="cname" id="cName"></div>
+      <div class="crank" id="cRank"></div>
+      <div class="bigCnt"><span id="cCnt">0</span><small>anlık toplam tık</small></div>
+      <button class="tapBtn" id="cTap">Destekle</button>
+    </div>
+
+    <div class="panels">
+      <div class="panel mePanel">
+        <h3>⭐ Senin İstatistiklerin</h3>
+        <div class="uname" id="cMeName">–</div>
+        <div class="meStats">
+          <div>Bu Ülkeye<b id="cMeHere">0</b></div>
+          <div>Toplam<b id="cMeTotal">0</b></div>
+          <div>Ülke İçi Sıran<b id="cMeRank">–</b></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 id="cTopTitle">Taraftar Liderliği</h3>
+        <ol id="cTop"></ol>
+      </div>
+      <div class="panel">
+        <h3>🏆 Ülke Sıralaması</h3>
+        <div class="scroll"><ol id="cRankList"></ol></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="viewBattle">
+    <div class="fixchips" id="fixchips"></div>
+
+    <div class="battle">
+      <div class="duel">
+        <div class="side">
+          <button class="flagbtn" id="btnA">
+            <img id="flagA" alt="">
+            <span class="cnt" id="cntA">0</span>
+          </button>
+          <div class="tname" id="nameA"></div>
+          <button class="tapBtn" data-side="A">Destekle</button>
+        </div>
+        <div class="vs"><span class="spark" id="spark">⚔️</span>VS</div>
+        <div class="side">
+          <button class="flagbtn" id="btnB">
+            <img id="flagB" alt="">
+            <span class="cnt" id="cntB">0</span>
+          </button>
+          <div class="tname" id="nameB"></div>
+          <button class="tapBtn" data-side="B">Destekle</button>
+        </div>
+      </div>
+
+      <div class="tug">
+        <div class="bar"><div class="fillL" id="fillL" style="width:50%"></div><div class="fillR"></div></div>
+        <div class="pcts"><span class="l" id="pctA">50%</span><span class="r" id="pctB">50%</span></div>
+      </div>
+    </div>
+
+    <div class="panels">
+      <div class="panel mePanel">
+        <h3>⭐ Senin Karnen</h3>
+        <div class="uname" id="meName">–</div>
+        <div class="meStats">
+          <div>Bu Maçta<b id="meMatch">0</b></div>
+          <div>Toplam<b id="meTotal">0</b></div>
+          <div>Oyuncu Sıran<b id="meRank">–</b></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 id="topAtitle">İlk 10</h3>
+        <ol id="topA"></ol>
+      </div>
+      <div class="panel">
+        <h3 id="topBtitle">İlk 10</h3>
+        <ol id="topB"></ol>
+      </div>
+    </div>
+
+    <div class="next" id="nextTr"></div>
+  </section>
+</main>
+
+<footer>Taraftar Arena 26 · bayraklar stilize çizimdir · resmi turnuva markalarıyla bağı yoktur</footer>
+
+<script>
+/* =========================================================
+   TARAFTAR ARENA 26 — v5 (backend bağlı)
+   Bot simülasyonu kaldırıldı; gerçek zamanlı SSE ile çalışır.
+   ========================================================= */
+
+// ---- localStorage'dan kimlik al veya oluştur ----
+function genId() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let id = '';
+  for (let i = 0; i < 16; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+let deviceId = localStorage.getItem('ta26_device');
+if (!deviceId) { deviceId = genId(); localStorage.setItem('ta26_device', deviceId); }
+
+let storedName = localStorage.getItem('ta26_name');
+
+// ---- 48 takım (sunucuyla aynı kaynak: data/teams.json'dan inline edilmiş) ----
+const TEAMS = [
+ {c:'MEX',n:'Meksika',w:9},{c:'RSA',n:'Güney Afrika',w:5},{c:'KOR',n:'Güney Kore',w:7},{c:'CZE',n:'Çekya',w:4},
+ {c:'CAN',n:'Kanada',w:6},{c:'BIH',n:'Bosna Hersek',w:4},{c:'QAT',n:'Katar',w:3},{c:'SUI',n:'İsviçre',w:4},
+ {c:'SCO',n:'İskoçya',w:4},{c:'MAR',n:'Fas',w:7},{c:'BRA',n:'Brezilya',w:10},{c:'HAI',n:'Haiti',w:2},
+ {c:'USA',n:'ABD',w:8},{c:'PAR',n:'Paraguay',w:3},{c:'AUS',n:'Avustralya',w:5},{c:'TUR',n:'Türkiye',w:9},
+ {c:'GER',n:'Almanya',w:8},{c:'CIV',n:'Fildişi Sahili',w:4},{c:'CUW',n:'Curaçao',w:2},{c:'ECU',n:'Ekvador',w:4},
+ {c:'NED',n:'Hollanda',w:6},{c:'JPN',n:'Japonya',w:7},{c:'SWE',n:'İsveç',w:4},{c:'TUN',n:'Tunus',w:4},
+ {c:'ESP',n:'İspanya',w:8},{c:'CPV',n:'Yeşil Burun',w:2},{c:'KSA',n:'Suudi Arabistan',w:5},{c:'URU',n:'Uruguay',w:5},
+ {c:'BEL',n:'Belçika',w:5},{c:'EGY',n:'Mısır',w:5},{c:'IRN',n:'İran',w:5},{c:'NZL',n:'Yeni Zelanda',w:2},
+ {c:'FRA',n:'Fransa',w:8},{c:'NOR',n:'Norveç',w:5},{c:'SEN',n:'Senegal',w:5},{c:'IRQ',n:'Irak',w:3},
+ {c:'ARG',n:'Arjantin',w:10},{c:'AUT',n:'Avusturya',w:4},{c:'JOR',n:'Ürdün',w:3},{c:'ALG',n:'Cezayir',w:5},
+ {c:'POR',n:'Portekiz',w:7},{c:'UZB',n:'Özbekistan',w:4},{c:'COL',n:'Kolombiya',w:6},{c:'COD',n:'DR Kongo',w:3},
+ {c:'ENG',n:'İngiltere',w:7},{c:'GHA',n:'Gana',w:4},{c:'PAN',n:'Panama',w:3},{c:'CRO',n:'Hırvatistan',w:5},
+];
+const T = Object.fromEntries(TEAMS.map(t=>[t.c,t]));
+
+/* ================= BAYRAK ÇİZİM MOTORU ================= */
+const FS=240;
+function R(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h)}
+function hb(c,cols){const h=FS/cols.length;cols.forEach((col,i)=>R(c,0,i*h,FS,h+1,col))}
+function vb(c,cols){const w=FS/cols.length;cols.forEach((col,i)=>R(c,i*w,0,w+1,FS,col))}
+function hw(c,specs){const tot=specs.reduce((a,b)=>a+b[1],0);let y=0;
+  specs.forEach(([col,w])=>{const h=FS*w/tot;R(c,0,y,FS,h+1,col);y+=h})}
+function disc(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,7);c.fill()}
+function ring(c,x,y,r,col,w){c.strokeStyle=col;c.lineWidth=w;c.beginPath();c.arc(x,y,r,0,7);c.stroke()}
+function star(c,cx,cy,r,col,rot=-Math.PI/2,pts=5,inner=.45){
+  c.fillStyle=col;c.beginPath();
+  for(let i=0;i<pts*2;i++){const rr=i%2?r*inner:r,a=rot+i*Math.PI/pts;
+    const X=cx+rr*Math.cos(a),Y=cy+rr*Math.sin(a);i?c.lineTo(X,Y):c.moveTo(X,Y)}
+  c.closePath();c.fill()}
+function cres(c,cx,cy,r,col){
+  c.fillStyle=col;c.beginPath();
+  c.arc(cx,cy,r,Math.PI*.5,Math.PI*1.5);
+  c.arc(cx+r*.5,cy,r*.72,Math.PI*1.5,Math.PI*.5,true);
+  c.closePath();c.fill()}
+function tri(c,pts,col){c.fillStyle=col;c.beginPath();c.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath();c.fill()}
+function dg(c,x1,y1,x2,y2,w,col){c.strokeStyle=col;c.lineWidth=w;c.lineCap='butt';
+  c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke()}
+function nordic(c,colO,wO,colI,wI){const cx=FS*.42;
+  R(c,cx-wO/2,0,wO,FS,colO);R(c,0,FS/2-wO/2,FS,wO,colO);
+  if(colI){R(c,cx-wI/2,0,wI,FS,colI);R(c,0,FS/2-wI/2,FS,wI,colI)}}
+function sunRays(c,cx,cy,r,col){disc(c,cx,cy,r,col);c.strokeStyle=col;c.lineWidth=r*.3;
+  for(let i=0;i<12;i++){const a=i*Math.PI/6;c.beginPath();
+    c.moveTo(cx+Math.cos(a)*r*1.3,cy+Math.sin(a)*r*1.3);
+    c.lineTo(cx+Math.cos(a)*r*1.85,cy+Math.sin(a)*r*1.85);c.stroke()}}
+function uj(c,x,y,w,h){
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
+  R(c,x,y,w,h,'#1A337F');
+  dg(c,x,y,x+w,y+h,h*.30,'#fff');dg(c,x+w,y,x,y+h,h*.30,'#fff');
+  dg(c,x,y,x+w,y+h,h*.13,'#C8102E');dg(c,x+w,y,x,y+h,h*.13,'#C8102E');
+  R(c,x+w/2-h*.17,y,h*.34,h,'#fff');R(c,x,y+h/2-h*.17,w,h*.34,'#fff');
+  R(c,x+w/2-h*.10,y,h*.20,h,'#C8102E');R(c,x,y+h/2-h*.10,w,h*.20,'#C8102E');
+  c.restore()}
+function wavy(c,x0,x1,y,amp,col,w){c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';
+  c.beginPath();for(let x=x0;x<=x1;x+=4){const yy=y+Math.sin((x-x0)/13)*amp;
+    x===x0?c.moveTo(x,yy):c.lineTo(x,yy)}c.stroke()}
+
+const DRAW={
+ MEX(c){vb(c,['#006847','#fff','#CE1126']);
+   disc(c,120,118,15,'#7B5230');tri(c,[[120,104],[136,96],[128,116]],'#7B5230');
+   tri(c,[[106,122],[94,134],[112,130]],'#7B5230');
+   c.strokeStyle='#3F7A34';c.lineWidth=6;c.beginPath();c.arc(120,124,26,Math.PI*.15,Math.PI*.85);c.stroke()},
+ RSA(c){R(c,0,0,FS,120,'#E03C31');R(c,0,120,FS,120,'#001489');
+   R(c,0,77,FS,86,'#fff');tri(c,[[0,0],[144,120],[0,240]],'#fff');
+   R(c,0,96,FS,48,'#007749');tri(c,[[0,26],[124,120],[0,214]],'#007749');
+   tri(c,[[0,46],[96,120],[0,194]],'#FFB81C');
+   tri(c,[[0,72],[70,120],[0,168]],'#000')},
+ KOR(c){R(c,0,0,FS,FS,'#fff');
+   c.fillStyle='#CD2E3A';c.beginPath();c.arc(120,120,42,Math.PI,0);c.fill();
+   c.fillStyle='#0047A0';c.beginPath();c.arc(120,120,42,0,Math.PI);c.fill();
+   disc(c,99,120,21,'#CD2E3A');disc(c,141,120,21,'#0047A0');
+   const bars=(x,y,a)=>{c.save();c.translate(x,y);c.rotate(a);
+     for(let k=-1;k<=1;k++)R(c,-17,k*10-3,34,6,'#000');c.restore()};
+   bars(52,52,Math.PI/4);bars(188,52,-Math.PI/4);
+   bars(52,188,-Math.PI/4);bars(188,188,Math.PI/4)},
+ CZE(c){R(c,0,0,FS,120,'#fff');R(c,0,120,FS,120,'#D7141A');
+   tri(c,[[0,0],[132,120],[0,240]],'#11457E')},
+ CAN(c){R(c,0,0,FS,FS,'#fff');R(c,0,0,62,FS,'#D80621');R(c,178,0,62,FS,'#D80621');
+   const L=[[0,-36],[7,-19],[22,-28],[17,-9],[34,-13],[26,3],[38,10],[11,13],[15,32],[5,21],[0,38],[-5,21],[-15,32],[-11,13],[-38,10],[-26,3],[-34,-13],[-17,-9],[-22,-28],[-7,-19]];
+   c.fillStyle='#D80621';c.beginPath();
+   L.forEach((p,i)=>i?c.lineTo(120+p[0],112+p[1]):c.moveTo(120+p[0],112+p[1]));
+   c.closePath();c.fill();R(c,117,148,6,18,'#D80621')},
+ BIH(c){R(c,0,0,FS,FS,'#002F6C');tri(c,[[80,0],[200,0],[200,240]],'#FECB00');
+   for(let i=0;i<5;i++){const t=.08+.21*i;star(c,80+120*t-16,240*t,10,'#fff')}},
+ QAT(c){R(c,0,0,FS,FS,'#fff');c.fillStyle='#8A1538';c.beginPath();
+   c.moveTo(82,0);const n=9,h=FS/n;
+   for(let i=0;i<n;i++){c.lineTo(58,(i+.5)*h);c.lineTo(82,(i+1)*h)}
+   c.lineTo(240,240);c.lineTo(240,0);c.closePath();c.fill()},
+ SUI(c){R(c,0,0,FS,FS,'#DA291C');R(c,102,52,36,136,'#fff');R(c,52,102,136,36,'#fff')},
+ SCO(c){R(c,0,0,FS,FS,'#005EB8');dg(c,0,0,240,240,36,'#fff');dg(c,240,0,0,240,36,'#fff')},
+ MAR(c){R(c,0,0,FS,FS,'#C1272D');
+   const pts=[];for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5;
+     pts.push([120+46*Math.cos(a),124+46*Math.sin(a)])}
+   c.strokeStyle='#006233';c.lineWidth=8;c.lineJoin='miter';c.beginPath();
+   c.moveTo(pts[0][0],pts[0][1]);[2,4,1,3,0].forEach(i=>c.lineTo(pts[i][0],pts[i][1]));
+   c.closePath();c.stroke()},
+ BRA(c){R(c,0,0,FS,FS,'#009C3B');
+   tri(c,[[120,26],[214,120],[120,214],[26,120]],'#FFDF00');
+   disc(c,120,120,52,'#002776');
+   c.save();c.beginPath();c.arc(120,120,52,0,7);c.clip();
+   c.strokeStyle='#fff';c.lineWidth=12;c.beginPath();c.arc(120,216,116,-Math.PI*.74,-Math.PI*.28);c.stroke();
+   c.restore()},
+ HAI(c){R(c,0,0,FS,120,'#00209F');R(c,0,120,FS,120,'#D21034');
+   R(c,94,94,52,52,'#fff');disc(c,120,110,8,'#1C7C3F');R(c,117,110,6,22,'#7B5230')},
+ USA(c){for(let i=0;i<7;i++)R(c,0,i*FS/7,FS,FS/7+1,i%2?'#fff':'#B22234');
+   R(c,0,0,108,FS*3/7,'#3C3B6E');
+   for(let r=0;r<3;r++)for(let k=0;k<4;k++)disc(c,16+k*26,17+r*34,5,'#fff')},
+ PAR(c){hb(c,['#D52B1E','#fff','#0038A8']);
+   ring(c,120,120,21,'#1C7C3F',5);star(c,120,120,11,'#FFD700')},
+ AUS(c){R(c,0,0,FS,FS,'#012169');uj(c,0,0,120,120);
+   star(c,60,180,21,'#fff',-Math.PI/2,7,.5);
+   star(c,176,42,10,'#fff',-Math.PI/2,7,.5);star(c,202,98,10,'#fff',-Math.PI/2,7,.5);
+   star(c,158,124,9,'#fff',-Math.PI/2,7,.5);star(c,188,186,10,'#fff',-Math.PI/2,7,.5);
+   star(c,150,86,6,'#fff')},
+ TUR(c){R(c,0,0,FS,FS,'#E30A17');cres(c,92,120,52,'#fff');star(c,158,120,20,'#fff',Math.PI/2*5)},
+ GER(c){hb(c,['#000','#DD0000','#FFCE00'])},
+ CIV(c){vb(c,['#FF8200','#fff','#009A44'])},
+ CUW(c){R(c,0,0,FS,FS,'#002B7F');R(c,0,150,FS,30,'#F9E300');
+   star(c,46,46,17,'#fff');star(c,82,84,11,'#fff')},
+ ECU(c){hw(c,[['#FFDD00',2],['#0033A0',1],['#EF3340',1]]);
+   disc(c,120,108,19,'#9DBBDD');disc(c,120,98,6,'#5C4632');
+   c.strokeStyle='#5C4632';c.lineWidth=4;c.beginPath();c.arc(120,112,14,Math.PI*.1,Math.PI*.9);c.stroke()},
+ NED(c){hb(c,['#AE1C28','#fff','#21468B'])},
+ JPN(c){R(c,0,0,FS,FS,'#fff');disc(c,120,120,46,'#BC002D')},
+ SWE(c){R(c,0,0,FS,FS,'#006AA7');nordic(c,'#FECC02',34)},
+ TUN(c){R(c,0,0,FS,FS,'#E70013');disc(c,120,120,48,'#fff');
+   cres(c,108,120,32,'#E70013');star(c,130,120,13,'#E70013',Math.PI/2*5)},
+ ESP(c){hw(c,[['#AA151B',1],['#F1BF00',2],['#AA151B',1]]);
+   R(c,68,96,26,34,'#AA151B');R(c,68,96,26,9,'#F1BF00');
+   ring(c,81,113,15,'#7A6A00',3)},
+ CPV(c){R(c,0,0,FS,FS,'#003893');R(c,0,138,FS,15,'#fff');R(c,0,153,FS,14,'#CF2027');R(c,0,167,FS,15,'#fff');
+   for(let i=0;i<8;i++){const a=i*Math.PI/4;star(c,96+32*Math.cos(a),152+32*Math.sin(a),7,'#F7D116')}},
+ KSA(c){R(c,0,0,FS,FS,'#006C35');
+   wavy(c,46,194,92,6,'#fff',10);wavy(c,66,174,116,4,'#fff',7);
+   R(c,52,152,136,9,'#fff');tri(c,[[188,152],[202,156.5],[188,161]],'#fff');R(c,42,148,12,17,'#fff')},
+ URU(c){for(let i=0;i<9;i++)R(c,0,i*FS/9,FS,FS/9+1,i%2?'#0038A8':'#fff');
+   R(c,0,0,96,FS*4/9,'#fff');sunRays(c,48,53,15,'#FCD116')},
+ BEL(c){vb(c,['#000','#FDDA24','#EF3340'])},
+ EGY(c){hb(c,['#CE1126','#fff','#000']);
+   disc(c,120,116,11,'#C09300');tri(c,[[108,124],[96,106],[112,110]],'#C09300');
+   tri(c,[[132,124],[144,106],[128,110]],'#C09300');R(c,112,128,16,6,'#C09300')},
+ IRN(c){hb(c,['#239F40','#fff','#DA0000']);
+   c.strokeStyle='#DA0000';c.lineWidth=6;
+   c.beginPath();c.arc(108,120,14,Math.PI*1.6,Math.PI*.9);c.stroke();
+   c.beginPath();c.arc(132,120,14,Math.PI*.1,Math.PI*1.4,true);c.stroke();
+   R(c,117,104,6,30,'#DA0000')},
+ NZL(c){R(c,0,0,FS,FS,'#012169');uj(c,0,0,120,120);
+   const st=(x,y)=>{star(c,x,y,12,'#fff');star(c,x,y,8,'#C8102E')};
+   st(174,56);st(202,108);st(150,114);st(178,172)},
+ FRA(c){vb(c,['#0055A4','#fff','#EF4135'])},
+ NOR(c){R(c,0,0,FS,FS,'#BA0C2F');nordic(c,'#fff',42,'#00205B',20)},
+ SEN(c){vb(c,['#00853F','#FDEF42','#E31B23']);star(c,120,120,23,'#00853F')},
+ IRQ(c){hb(c,['#CE1126','#fff','#000']);wavy(c,72,168,118,7,'#007A3D',10)},
+ ARG(c){hb(c,['#74ACDF','#fff','#74ACDF']);sunRays(c,120,120,17,'#F6B40E')},
+ AUT(c){hb(c,['#ED2939','#fff','#ED2939'])},
+ JOR(c){hb(c,['#000','#fff','#007A3D']);tri(c,[[0,0],[120,120],[0,240]],'#CE1126');
+   star(c,46,120,13,'#fff',-Math.PI/2,7,.5)},
+ ALG(c){R(c,0,0,FS,FS,'#fff');R(c,0,0,120,FS,'#006233');
+   cres(c,108,120,44,'#D21034');star(c,142,120,15,'#D21034')},
+ POR(c){R(c,0,0,96,FS,'#046A38');R(c,96,0,144,FS,'#DA291C');
+   disc(c,96,120,32,'#FFE900');disc(c,96,120,19,'#fff');ring(c,96,120,19,'#DA291C',4)},
+ UZB(c){hb(c,['#0099B5','#fff','#1EB53A']);
+   R(c,0,76,FS,7,'#CE1126');R(c,0,157,FS,7,'#CE1126');
+   cres(c,42,40,19,'#fff');
+   disc(c,80,28,4,'#fff');disc(c,96,42,4,'#fff');disc(c,80,52,4,'#fff')},
+ COL(c){hw(c,[['#FCD116',2],['#003893',1],['#CE1126',1]])},
+ COD(c){R(c,0,0,FS,FS,'#007FFF');dg(c,0,240,240,0,62,'#F7D618');dg(c,0,240,240,0,40,'#CE1021');
+   star(c,46,46,25,'#F7D618')},
+ ENG(c){R(c,0,0,FS,FS,'#fff');R(c,100,0,40,FS,'#CE1124');R(c,0,100,FS,40,'#CE1124')},
+ GHA(c){hb(c,['#CE1126','#FCD116','#006B3F']);star(c,120,120,23,'#000')},
+ PAN(c){R(c,0,0,FS,FS,'#fff');R(c,120,0,120,120,'#D21034');R(c,0,120,120,120,'#005293');
+   star(c,60,60,22,'#005293');star(c,180,180,22,'#D21034')},
+ CRO(c){hb(c,['#FF0000','#fff','#171796']);
+   for(let i=0;i<4;i++)for(let j=0;j<4;j++)
+     R(c,102+j*9,94+i*9,9,9,(i+j)%2?'#fff':'#FF0000');
+   c.strokeStyle='#fff';c.lineWidth=3;c.strokeRect(102,94,36,36)},
+};
+
+const flagCache={};
+function flagSrc(t){
+  if(flagCache[t.c]) return flagCache[t.c];
+  const cv=document.createElement('canvas');cv.width=FS;cv.height=FS;
+  const x=cv.getContext('2d');
+  (DRAW[t.c]||(c=>{R(c,0,0,FS,FS,'#456');c.fillStyle='#fff';
+    c.font='bold 72px sans-serif';c.textAlign='center';c.textBaseline='middle';
+    c.fillText(t.c,120,120)}))(x);
+  flagCache[t.c]=cv.toDataURL('image/png');
+  return flagCache[t.c];
+}
+const flagImg=(t,px)=>`<img class="fc" src="${flagSrc(t)}" alt="${t.n}" title="${t.n}" width="${px}" height="${px}" draggable="false">`;
+
+/* ============== DURUM ============== */
+const S={
+  name: storedName || null,
+  mineTotal: 0,
+  minePerTeam: Object.fromEntries(TEAMS.map(t=>[t.c,0])),
+  grid: Object.fromEntries(TEAMS.map(t=>[t.c,0])),
+  battles: {},
+  fixtures: [],
+  fix: null,
+  cTops: {},
+  countryTops: {},
+  country: null,
+  clickTimes: [],
+};
+
+// Biriken tık kuyruğu: {type, id, side?, n}[]
+let pendingClicks = [];
+
+function fmt(n){return Number(n).toLocaleString('tr-TR')}
+function $(id){return document.getElementById(id)}
+
+/* ============== SUNUCUDAN DURUM YÜKLE ============== */
+async function loadState(){
+  try {
+    const url = `/api/state?device=${encodeURIComponent(deviceId)}&name=${encodeURIComponent(S.name||'')}`;
+    const res = await fetch(url);
+    if(!res.ok) return;
+    const data = await res.json();
+    applyState(data);
+    buildGrid();
+    buildChips();
+    if(S.fix) paintBattle(true);
+  } catch(e) {
+    console.warn('[state] yüklenemedi:', e.message);
+  }
+}
+
+function applyState(data){
+  if(data.scores) Object.assign(S.grid, data.scores);
+  if(data.fixtures) {
+    S.fixtures = data.fixtures;
+    data.fixtures.forEach(f => {
+      S.battles[f.id] = {
+        A: f.counters?.A ?? 0,
+        B: f.counters?.B ?? 0,
+        topA: f.topA ?? [],
+        topB: f.topB ?? [],
+      };
+    });
+    if(!S.fix && S.fixtures.length) S.fix = S.fixtures[0];
+  }
+  if(data.countryTops) Object.assign(S.cTops, data.countryTops);
+  if(data.me) {
+    S.mineTotal = data.me.total ?? S.mineTotal;
+  }
+}
+
+/* ============== SSE BAĞLANTISI ============== */
+function connectSSE(){
+  const es = new EventSource('/api/stream');
+  es.onmessage = e => {
+    try {
+      const data = JSON.parse(e.data);
+      applyState(data);
+      // Görüntülenen sayfayı güncelle
+      if($('viewGrid').classList.contains('on')) sortGrid();
+      if($('viewCountry').classList.contains('on')) paintCountry();
+      if($('viewBattle').classList.contains('on')) paintBattle();
+      paintStrip();
+    } catch {}
+  };
+  es.onerror = () => {
+    es.close();
+    setTimeout(connectSSE, 3000);
+  };
+}
+
+/* ============== TIK KUYRUĞU & GÖNDERME ============== */
+function allowClick(){
+  const now = performance.now();
+  S.clickTimes = S.clickTimes.filter(t => now - t < 1000);
+  if(S.clickTimes.length >= 15) return false;
+  S.clickTimes.push(now);
+  return true;
+}
+
+function queueClick(type, id, side){
+  if(!allowClick()) return false;
+  const existing = pendingClicks.find(it => it.type===type && it.id===id && it.side===side);
+  if(existing) existing.n = Math.min(existing.n + 1, 10);
+  else pendingClicks.push({type, id, ...(side?{side}:{}), n:1});
+  return true;
+}
+
+async function flushClicks(){
+  if(!pendingClicks.length || !S.name) return;
+  const batch = pendingClicks.splice(0);
+  try {
+    const res = await fetch('/api/clicks', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({device: deviceId, name: S.name, items: batch}),
+    });
+    if(!res.ok) {
+      // Başarısız olursa kuyruğa geri ekle
+      pendingClicks = [...batch, ...pendingClicks];
+    } else {
+      const me = await res.json();
+      if(me?.total != null) S.mineTotal = me.total;
+      paintStrip();
+    }
+  } catch {
+    pendingClicks = [...batch, ...pendingClicks];
+  }
+}
+
+setInterval(flushClicks, 500);
+
+function pop(el,txt='+1'){
+  const p=document.createElement('span');
+  p.className='pop';p.textContent=txt;
+  el.appendChild(p);
+  p.addEventListener('animationend',()=>p.remove());
+}
+function countryRank(c){
+  return [...TEAMS].sort((a,b)=>S.grid[b.c]-S.grid[a.c]).findIndex(t=>t.c===c)+1;
+}
+
+/* ============== BAYRAK YARIŞI (GRID) ============== */
+const gridEl=$('grid');const cardRefs={};
+function buildGrid(){
+  if(Object.keys(cardRefs).length > 0) { sortGrid(); paintStrip(); return; }
+  gridEl.innerHTML='';
+  TEAMS.forEach(t=>{
+    const d=document.createElement('button');
+    d.className='gItem';d.title=t.n;d.setAttribute('aria-label',t.n);
+    d.innerHTML=`<span class="rank"></span>${flagImg(t,72)}<span class="cnt"></span><span class="mine"></span>`;
+    d.onclick=()=>openCountry(t.c);
+    gridEl.appendChild(d);
+    cardRefs[t.c]={el:d,rank:d.querySelector('.rank'),cnt:d.querySelector('.cnt'),mine:d.querySelector('.mine')};
+  });
+  sortGrid();paintStrip();
+}
+function paintCard(c){
+  const r=cardRefs[c];if(!r)return;
+  r.cnt.textContent=fmt(S.grid[c]);
+  r.mine.textContent=S.minePerTeam[c]?`sen: ${fmt(S.minePerTeam[c])}`:'';
+}
+function sortGrid(){
+  const order=[...TEAMS].sort((a,b)=>S.grid[b.c]-S.grid[a.c]);
+  order.forEach((t,i)=>{
+    const r=cardRefs[t.c];if(!r)return;
+    gridEl.appendChild(r.el);
+    r.rank.textContent='#'+(i+1);
+    r.el.classList.toggle('r1',i===0);r.el.classList.toggle('r2',i===1);r.el.classList.toggle('r3',i===2);
+    paintCard(t.c);
+  });
+  const L=order[0];
+  $('leaderName').innerHTML=`<img class="fc" src="${flagSrc(L)}" alt=""> ${L.n}`;
+}
+function paintStrip(){
+  $('totalAll').textContent=fmt(Object.values(S.grid).reduce((a,b)=>a+b,0));
+  $('totalMine').textContent=fmt(S.mineTotal);
+}
+
+/* ============== ÜLKE DETAYI ============== */
+function openCountry(c){
+  S.country=c;
+  const t=T[c];
+  $('cFlag').src=flagSrc(t);$('cFlag').alt=t.n;
+  $('cName').textContent=t.n;
+  $('cTopTitle').innerHTML=`${flagImg(t,18)} Taraftar Liderliği`;
+  showView('Country');
+  paintCountry();
+}
+function countryClick(){
+  if(!S.country) return;
+  const c=S.country;
+  if(!queueClick('country', c)) return;
+  S.grid[c]++;S.minePerTeam[c]++;
+  pop($('cFlagBtn'));
+  paintCountry();paintStrip();
+}
+function paintCountry(){
+  const c=S.country;if(!c)return;
+  const top = (S.cTops[c] || []).map(p => ({
+    ...p,
+    me: p.deviceId === deviceId,
+  }));
+  $('cCnt').textContent=fmt(S.grid[c]);
+  $('cCntBadge').textContent=fmt(S.grid[c]);
+  $('cRank').innerHTML=`Dünya sıralaması: <b>#${countryRank(c)}</b>`;
+  $('cMeName').textContent=S.name||'–';
+  $('cMeHere').textContent=fmt(S.minePerTeam[c]);
+  $('cMeTotal').textContent=fmt(S.mineTotal);
+  const idx=top.findIndex(x=>x.me);
+  $('cMeRank').textContent= idx>=0?'#'+(idx+1):'–';
+  const ol=$('cTop');ol.innerHTML='';
+  top.slice(0,10).forEach((p,i)=>{
+    const li=document.createElement('li');
+    if(p.me)li.classList.add('me');
+    li.innerHTML=`<span class="nm"><span class="idx">${i+1}</span>${p.me?'⭐ ':''}${p.name}</span><span class="sc">${fmt(p.score)}</span>`;
+    ol.appendChild(li);
+  });
+  const rl=$('cRankList');rl.innerHTML='';
+  [...TEAMS].sort((a,b)=>S.grid[b.c]-S.grid[a.c]).forEach((tm,i)=>{
+    const li=document.createElement('li');
+    if(tm.c===c)li.classList.add('cur');
+    li.innerHTML=`<span class="nm"><span class="idx">${i+1}</span><img src="${flagSrc(tm)}" class="fc" width="16" height="16" alt="">${tm.n}</span><span class="sc">${fmt(S.grid[tm.c])}</span>`;
+    li.onclick=()=>openCountry(tm.c);
+    rl.appendChild(li);
+  });
+}
+$('cFlagBtn').onclick=countryClick;
+$('cTap').onclick=countryClick;
+$('backBtn').onclick=()=>{S.country=null;showView('Grid');sortGrid()};
+
+/* ============== GÜNÜN KAPIŞMASI ============== */
+function buildChips(){
+  const ch=$('fixchips');ch.innerHTML='';
+  S.fixtures.forEach(f=>{
+    const b=document.createElement('button');
+    const ta=T[f.a],tb=T[f.b];
+    if(!ta||!tb) return;
+    b.innerHTML=`${flagImg(ta,18)} – ${flagImg(tb,18)}<span class="kicktime">${f.ko}</span>`;
+    b.onclick=()=>{S.fix=f;buildChips();paintBattle(true)};
+    if(S.fix && S.fix.id===f.id) b.classList.add('on');
+    ch.appendChild(b);
+  });
+  // Maç yoksa bilgi göster
+  if(!S.fixtures.length) ch.innerHTML='<span style="color:var(--chalk-dim);font-size:13px;padding:6px">Bugün maç yok</span>';
+}
+function battleClick(side){
+  if(!S.fix) return;
+  if(!queueClick('match', S.fix.id, side)) return;
+  const B=S.battles[S.fix.id];if(!B)return;
+  B[side]++;
+  pop(side==='A'?$('btnA'):$('btnB'));
+  const sp=$('spark');
+  sp.classList.remove('hitL','hitR');void sp.offsetWidth;
+  sp.classList.add(side==='A'?'hitL':'hitR');
+  paintBattle();paintStrip();paintMe();
+}
+function paintBattle(full){
+  if(!S.fix) return;
+  const f=S.fix, B=S.battles[f.id];
+  if(!B) return;
+  const ta=T[f.a],tb=T[f.b];
+  if(!ta||!tb) return;
+  if(full){
+    $('flagA').src=flagSrc(ta);$('flagB').src=flagSrc(tb);
+    $('flagA').alt=ta.n;$('flagB').alt=tb.n;
+    $('nameA').textContent=ta.n;$('nameB').textContent=tb.n;
+    $('topAtitle').innerHTML=`${flagImg(ta,18)} İlk 10 Tıklayıcı`;
+    $('topBtitle').innerHTML=`${flagImg(tb,18)} İlk 10 Tıklayıcı`;
+  }
+  $('cntA').textContent=fmt(B.A);$('cntB').textContent=fmt(B.B);
+  const tot=B.A+B.B||1;
+  const pA=Math.round(B.A/tot*100);
+  $('fillL').style.width=pA+'%';
+  $('pctA').textContent=pA+'%';$('pctB').textContent=(100-pA)+'%';
+  $('btnA').classList.toggle('lead',B.A>=B.B);
+  $('btnB').classList.toggle('lead',B.B>B.A);
+  paintTop($('topA'),B.topA);paintTop($('topB'),B.topB);
+}
+function paintTop(ol,list){
+  ol.innerHTML='';
+  (list||[]).slice(0,10).forEach((p,i)=>{
+    const li=document.createElement('li');
+    const isMe = p.deviceId===deviceId;
+    if(isMe) li.classList.add('me');
+    li.innerHTML=`<span class="nm"><span class="idx">${i+1}</span>${isMe?'⭐ ':''}${p.name}</span><span class="sc">${fmt(p.score)}</span>`;
+    ol.appendChild(li);
+  });
+}
+function paintMe(){
+  if(!S.fix) return;
+  const B=S.battles[S.fix.id];if(!B)return;
+  $('meName').textContent=S.name||'–';
+  $('meMatch').textContent='–';
+  $('meTotal').textContent=fmt(S.mineTotal);
+  $('meRank').textContent='–';
+}
+
+/* ============== GÖRÜNÜM & GİRİŞ ============== */
+function showView(v){
+  ['Grid','Country','Battle'].forEach(x=>$('view'+x).classList.toggle('on',x===v));
+  $('tabGrid').classList.toggle('on',v==='Grid'||v==='Country');
+  $('tabBattle').classList.toggle('on',v==='Battle');
+}
+$('tabGrid').onclick=()=>{S.country=null;showView('Grid');sortGrid()};
+$('tabBattle').onclick=()=>{showView('Battle');buildChips();paintBattle(true)};
+
+$('btnA').onclick=()=>battleClick('A');
+$('btnB').onclick=()=>battleClick('B');
+document.querySelectorAll('.tapBtn[data-side]').forEach(b=>b.onclick=()=>battleClick(b.dataset.side));
+
+$('goBtn').onclick=enter;
+$('unameIn').addEventListener('keydown',e=>{if(e.key==='Enter')enter()});
+function enter(){
+  const v=$('unameIn').value.trim();
+  const name=v||'taraftar'+(Math.floor(Math.random()*900)+100);
+  S.name=name;
+  localStorage.setItem('ta26_name', name);
+  $('veil').classList.add('off');
+  paintMe();
+  // Ad ile state yeniden çek (kişisel istatistikler için)
+  loadState();
+  connectSSE();
+}
+
+// Daha önce giriş yapılmışsa modalı atla
+if(storedName){
+  S.name = storedName;
+  $('veil').classList.add('off');
+  loadState().then(()=>connectSSE());
+}
+
+// Grid periyodik sıralama
+setInterval(()=>{if($('viewGrid').classList.contains('on'))sortGrid()},2000);
+</script>
+</body>
+</html>
