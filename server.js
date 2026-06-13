@@ -14,6 +14,7 @@ const { applyLimits }    = require('./lib/ratelimit');
 const counters           = require('./lib/counters');
 const { registerUser, loginUser } = require('./lib/auth');
 const { containsBadWord }         = require('./lib/badwords');
+const scoresLib          = require('./lib/scores');
 const redis              = require('./lib/redis');
 
 const app = Fastify({ logger: { level: 'warn' } });
@@ -54,9 +55,20 @@ function sanitizeName(name) {
 
 // ---- Durum snapshot ----
 async function buildState(deviceId, username) {
-  const [scores, ...fixData] = await Promise.all([
+  // Otomatik güncellenen fikstürleri Redis'ten al; yoksa statik dosyaya dön
+  let activeFixtures = fixtures;
+  try {
+    const cached = await redis.get('live:fixtures');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed.length > 0) activeFixtures = parsed;
+    }
+  } catch {}
+
+  const [scores, liveScores, ...fixData] = await Promise.all([
     counters.getCountryScores(TEAMS),
-    ...fixtures.flatMap(f => [
+    scoresLib.getLiveScores(activeFixtures),
+    ...activeFixtures.flatMap(f => [
       counters.getMatchCounters(f.id),
       counters.getMatchTop10(f.id, 'A'),
       counters.getMatchTop10(f.id, 'B'),
@@ -68,14 +80,14 @@ async function buildState(deviceId, username) {
     countryTops[t.c] = await counters.getCountryTop10(t.c);
   }));
 
-  const fixtureStates = fixtures.map((f, i) => ({
-    id: f.id, a: f.a, b: f.b, ko: f.ko,
+  const fixtureStates = activeFixtures.map((f, i) => ({
+    id: f.id, a: f.a, b: f.b, ko: f.ko, utc: f.utc,
     counters: fixData[i * 3],
     topA: fixData[i * 3 + 1],
     topB: fixData[i * 3 + 2],
   }));
 
-  const state = { scores, fixtures: fixtureStates, countryTops };
+  const state = { scores, fixtures: fixtureStates, countryTops, liveScores };
   if (deviceId && username) {
     state.me = await counters.getUserStats(deviceId, username);
   }
@@ -210,4 +222,5 @@ const PORT = Number(process.env.PORT ?? 3000);
 app.listen({ port: PORT, host: '0.0.0.0' }, (err) => {
   if (err) { console.error(err); process.exit(1); }
   console.log(`Taraftar Arena 26 → http://localhost:${PORT}`);
+  scoresLib.start();
 });
