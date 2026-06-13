@@ -1,4 +1,4 @@
-# Taraftar Arena 26
+# Clickrusher
 
 2026 Dünya Kupası boyunca yayında kalacak taraftar tık yarışı sitesi.
 
