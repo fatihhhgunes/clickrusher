@@ -270,18 +270,24 @@ function qSetLang(l){QLANG=l;qApplyLang();qBuildCGrid();qShowScreen('qsel');qUpd
 function qGetFlag(cn){const c=QCOUNTRIES.find(x=>x.n===cn);return c?c.f:'🌍';}
 
 function qUpdateSelScreen(){
-  const nickWrap=document.getElementById('q-nick-wrap');
-  const loginWrap=document.getElementById('q-login-wrap');
-  if(!nickWrap&&!loginWrap)return;
+  const guestBox=document.getElementById('qsel-guest-login');
+  const welcomeBox=document.getElementById('qsel-user-welcome');
+  const nickEl=document.getElementById('qsel-user-nick');
+  const ni=document.getElementById('qnick');
   if(S.name){
-    if(loginWrap)loginWrap.style.display='none';
-    if(nickWrap)nickWrap.style.display='';
-    const ni=document.getElementById('qnick');if(ni){ni.value=S.name;ni.readOnly=true;}
+    if(guestBox)guestBox.style.display='none';
+    if(welcomeBox)welcomeBox.style.display='';
+    if(nickEl)nickEl.textContent=S.name;
+    if(ni){ni.value=S.name;ni.readOnly=true;}
   }else{
-    if(loginWrap)loginWrap.style.display='';
-    if(nickWrap)nickWrap.style.display='';
-    const ni=document.getElementById('qnick');if(ni){ni.value='';ni.readOnly=false;}
+    if(guestBox)guestBox.style.display='';
+    if(welcomeBox)welcomeBox.style.display='none';
+    if(ni){ni.value='';ni.readOnly=false;}
   }
+}
+function qSkipLogin(){
+  const guestBox=document.getElementById('qsel-guest-login');
+  if(guestBox)guestBox.style.display='none';
 }
 
 async function qLoginInline(){
@@ -290,15 +296,17 @@ async function qLoginInline(){
   const errEl=document.getElementById('q-li-err');
   if(!nickEl||!pwEl)return;
   const nick=nickEl.value.trim(),pw=pwEl.value;
-  if(!nick||!pw){if(errEl)errEl.textContent='Kullanıcı adı ve şifre girin.';return;}
-  if(errEl)errEl.textContent='';
-  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nick,password:pw})});
-  const data=await r.json();
-  if(!r.ok){if(errEl)errEl.textContent=data.error||'Giriş hatası';return;}
-  localStorage.setItem('ta26_name',data.name||nick);
-  if(data.country)localStorage.setItem('ta26_country',data.country);
-  S.name=data.name||nick;S.country=data.country||'';
-  updateUserChip();qUpdateSelScreen();
+  if(!nick||!pw){if(errEl){errEl.textContent='Kullanıcı adı ve şifre girin.';errEl.style.display='';}return;}
+  if(errEl){errEl.textContent='';errEl.style.display='none';}
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nick,password:pw})});
+    const data=await r.json();
+    if(!r.ok){if(errEl){errEl.textContent=data.error||'Giriş hatası';errEl.style.display='';}return;}
+    localStorage.setItem('ta26_name',data.name||nick);
+    if(data.country)localStorage.setItem('ta26_country',data.country);
+    S.name=data.name||nick;S.country=data.country||'';
+    updateUserChip();qUpdateSelScreen();
+  }catch(e){if(errEl){errEl.textContent='Bağlantı hatası';errEl.style.display='';}}
 }
 
 function qBuildCGrid(){

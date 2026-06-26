@@ -99,9 +99,9 @@ function wizBuildCtryGrid(filter){
   });
   filtered.forEach(c=>{
     const t=T[c];
-    const el=document.createElement('div');el.className='wiz-ctry-item'+(wiz3SelCountry===c?' sel':'');
+    const el=document.createElement('div');el.className='wiz-ctry-btn'+(wiz3SelCountry===c?' sel':'');
     el.innerHTML=`<img src="https://flagcdn.com/w40/${t.fc}.png" alt="${t.name}" onerror="this.style.opacity='.3'"><span>${t.name}</span>`;
-    el.onclick=()=>{wiz3SelCountry=c;scroll.querySelectorAll('.wiz-ctry-item').forEach(x=>x.classList.toggle('sel',x===el));};
+    el.onclick=()=>{wiz3SelCountry=c;scroll.querySelectorAll('.wiz-ctry-btn').forEach(x=>x.classList.toggle('sel',x===el));};
     scroll.appendChild(el);
   });
 }

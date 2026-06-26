@@ -35,7 +35,10 @@ async function loadState() {
     if (!res.ok) return;
     const data = await res.json();
     if (data.scores)       Object.assign(S.grid, data.scores);
-    if (data.fixtures)     S.fixtures = data.fixtures;
+    if (data.fixtures){
+      S.fixtures = data.fixtures;
+      S.fixtures.forEach(f=>{ if(f.counters){ if(!S.battles)S.battles={}; S.battles[f.id]={A:f.counters.A||0,B:f.counters.B||0}; } });
+    }
     if (data.countryTops)  S.cTops = data.countryTops;
     if (data.liveScores)   S.liveScores = data.liveScores;
     if (data.me)           { S.mineTotal = data.me.total || 0; }
@@ -45,7 +48,10 @@ async function loadState() {
 
 function applyState(data) {
   if (data.scores)      Object.assign(S.grid, data.scores);
-  if (data.fixtures)    S.fixtures = data.fixtures;
+  if (data.fixtures){
+    S.fixtures = data.fixtures;
+    S.fixtures.forEach(f=>{ if(f.counters){ if(!S.battles)S.battles={}; S.battles[f.id]={A:f.counters.A||0,B:f.counters.B||0}; } });
+  }
   if (data.countryTops) S.cTops = data.countryTops;
   if (data.liveScores)  S.liveScores = data.liveScores;
   if (typeof crRefreshGrid === 'function') crRefreshGrid();

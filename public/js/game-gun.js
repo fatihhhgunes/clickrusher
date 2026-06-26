@@ -140,7 +140,16 @@ function updateCbUI(){
   cbSetCharge('away',Math.min(cbCounts.away/30,1));
 }
 
-function cbLoadTotals(){updateCbUI();}
+function cbLoadTotals(){
+  if(cbMatchId){
+    const f=(S.fixtures||[]).find(x=>x.id===cbMatchId);
+    if(f&&f.counters){
+      if(!S.battles)S.battles={};
+      S.battles[cbMatchId]={A:f.counters.A||0,B:f.counters.B||0};
+    }
+  }
+  updateCbUI();
+}
 
 function cbSetCharge(side,pct){
   const ring=document.getElementById('cb-'+side+'-ring');
