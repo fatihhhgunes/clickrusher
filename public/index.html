@@ -1017,6 +1017,89 @@ header{
 .wiz-btn{width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,#006699,#00C8FF);color:#fff;font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 4px 20px rgba(0,200,255,.3);}
 .wiz-btn-sec{width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--bord);color:var(--chalk-dim);font-size:14px;font-weight:700;letter-spacing:.06em;}
 .wiz-back-btn{font-size:13px;font-weight:700;color:var(--chalk-dim);padding:4px 8px;letter-spacing:.06em}
+
+/* ── MOBILE RESPONSIVE ──────────────────────────────────────── */
+
+/* Tablet: ≤768px — reduce logo, top-3, nations gap */
+@media(max-width:768px){
+  .logo-text{font-size:44px;letter-spacing:4px;}
+  .top3-grid{gap:48px;}
+  .flag-circ{width:160px;height:160px;}
+  .medal.g{transform:translateY(14px);}
+  .medal.s,.medal.b{transform:translateY(64px);}
+  .nations-grid{grid-template-columns:repeat(3,1fr);column-gap:0;gap:32px;justify-items:center;}
+}
+
+/* Mobile: ≤480px — all critical fixes */
+@media(max-width:480px){
+  /* Header */
+  header{padding:10px 14px;}
+  .logo-text{font-size:28px;letter-spacing:2px;}
+  .logo-sub{font-size:10px;letter-spacing:5px;}
+  .header-right{right:12px;}
+  .clock-zones,.clock-gmt{display:none;}
+  .clock-time{font-size:15px;letter-spacing:1px;}
+
+  /* Tabs: horizontal scroll so long names don't wrap */
+  .tabs{justify-content:flex-start;overflow-x:auto;padding:0 6px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{font-size:14px;padding:10px 14px;letter-spacing:1px;
+    flex-shrink:0;white-space:nowrap;}
+
+  /* Stats bar */
+  .stats{padding:8px 6px;gap:3px;}
+  .stat{padding:8px 6px;}
+  .stat-val{font-size:17px;}
+  .stat-val.cyan{font-size:14px;gap:4px;}
+  .rank-chip{width:22px;height:22px;font-size:9px;}
+  .stat-lbl{font-size:8px;letter-spacing:1.5px;}
+
+  /* Top-3 medals */
+  .top3-grid{gap:12px;}
+  .flag-circ{width:90px;height:90px;}
+  .medal.g{transform:translateY(8px);}
+  .medal.s,.medal.b{transform:translateY(37px);}
+  .medal-name{font-size:12px;}
+  .medal-pts{font-size:11px;}
+  .top3-title{font-size:22px;letter-spacing:6px;}
+  .top3-title-wrap{padding:6px 16px;}
+
+  /* Nations grid: 2 columns */
+  .nations-section{margin-top:32px;}
+  .nations-grid{grid-template-columns:repeat(2,1fr);column-gap:0;gap:20px;justify-items:center;}
+  .nf-circ{width:100px;height:100px;}
+  .nf-pts-wrap{width:100px;}
+  .nf-name{font-size:13px;max-width:110px;}
+  .nations-title{font-size:15px;letter-spacing:2px;}
+
+  /* Auth modal + quiz country grid */
+  .auth-box{padding:20px 14px 18px;}
+  .auth-country-grid{grid-template-columns:repeat(4,1fr);max-height:160px;}
+  #panel-quiz #cgrid{grid-template-columns:repeat(4,1fr);}
+
+  /* Flag picker */
+  .fp-box{padding:16px;}
+  .fp-grid{grid-template-columns:repeat(4,1fr);}
+
+  /* GK battle */
+  .gk-charge-wrap{width:80px;height:80px;}
+
+  /* Wizard */
+  .wiz-body{padding:14px 12px;}
+}
+
+/* Small phones: ≤360px */
+@media(max-width:360px){
+  .logo-text{font-size:22px;letter-spacing:1px;}
+  .logo-sub{font-size:9px;letter-spacing:3px;}
+  .tab{font-size:12px;padding:9px 11px;}
+  .nations-grid{gap:14px;}
+  .nf-circ{width:80px;height:80px;}
+  .nf-pts-wrap{width:80px;}
+  .auth-country-grid{grid-template-columns:repeat(3,1fr);}
+  .fp-grid{grid-template-columns:repeat(3,1fr);}
+}
 </style>
 </head>
 <body>
@@ -1305,8 +1388,8 @@ header{
     <div id="qsel-guest-login" style="display:none;width:100%;max-width:360px;margin-bottom:14px">
       <div style="background:#fff;border-radius:16px;padding:18px 20px;color:#222;box-shadow:0 6px 30px rgba(0,0,0,.25)">
         <p style="font-size:.88rem;color:#555;margin-bottom:12px;text-align:center">Puan kazanmak için giriş yap veya kayıt ol</p>
-        <input type="text" class="tin" id="q-li-nick" maxlength="15" placeholder="Kullanıcı adı" style="margin-top:0">
-        <input type="password" class="tin" id="q-li-pw" placeholder="Şifre" style="margin-top:8px">
+        <input type="text" class="tin" id="q-li-nick" maxlength="100" placeholder="E-posta veya kullanıcı adı" style="margin-top:0" autocomplete="username">
+        <input type="password" class="tin" id="q-li-pw" placeholder="Şifre" style="margin-top:8px" autocomplete="current-password">
         <button class="qbtn qbtn-primary" style="margin-top:10px" onclick="qLoginInline()">Giriş Yap</button>
         <p id="q-li-err" style="color:#e53935;font-size:.8rem;text-align:center;margin-top:6px;display:none"></p>
         <div style="text-align:center;margin-top:10px">
@@ -1455,6 +1538,7 @@ header{
       <div class="prof-avatar-circle" id="prof-av">👤</div>
       <div class="prof-info">
         <div class="prof-name" id="prof-dispname">—</div>
+        <div class="prof-email" id="prof-dispemail" style="display:none"></div>
         <div class="prof-email" id="prof-total">Toplam: 0 puan</div>
       </div>
     </div>
@@ -1576,13 +1660,13 @@ header{
     <!-- GİRİŞ -->
     <div id="af-login">
       <div class="auth-fld">
-        <label class="auth-lbl">Kullanıcı Adı</label>
-        <input class="auth-inp" type="text" id="li-nick" maxlength="15" placeholder="Kullanıcı adınız">
+        <label class="auth-lbl">E-posta veya Kullanıcı Adı</label>
+        <input class="auth-inp" type="text" id="li-nick" maxlength="100" placeholder="ornek@email.com veya kullanıcı adı" autocomplete="username">
       </div>
       <div class="auth-fld">
         <label class="auth-lbl">Şifre</label>
         <div class="pw-wrap">
-          <input class="auth-inp" type="password" id="li-pw" placeholder="••••••••">
+          <input class="auth-inp" type="password" id="li-pw" placeholder="••••••••" autocomplete="current-password">
           <button class="pw-eye" type="button" onclick="togglePw('li-pw',this)" tabindex="-1">👁</button>
         </div>
       </div>
@@ -1590,32 +1674,45 @@ header{
       <div class="auth-err bad" id="li-err"></div>
     </div>
 
-    <!-- KAYIT -->
+    <!-- KAYIT - ADIM 1: E-posta + Şifre -->
     <div id="af-register" style="display:none">
-      <div class="auth-fld">
-        <label class="auth-lbl">Kullanıcı Adı</label>
-        <input class="auth-inp" type="text" id="re-nick" maxlength="15" placeholder="SuperFatih (en az 2 karakter)">
-      </div>
-      <div class="auth-fld">
-        <label class="auth-lbl">Ülken (turnuvada temsil edeceğin)</label>
-        <div class="auth-country-grid" id="auth-cgrid"></div>
-      </div>
-      <div class="auth-fld">
-        <label class="auth-lbl">Şifre <span class="caps-warn" id="caps-warn" style="display:none">⚠ CAPS LOCK açık</span></label>
-        <div class="pw-wrap">
-          <input class="auth-inp" type="password" id="re-pw" maxlength="12" placeholder="6–12 karakter">
-          <button class="pw-eye" type="button" onclick="togglePw('re-pw',this)" tabindex="-1">👁</button>
+      <div id="af-reg-step1">
+        <div class="auth-fld">
+          <label class="auth-lbl">E-posta</label>
+          <input class="auth-inp" type="email" id="re-email" maxlength="100" placeholder="ornek@email.com" autocomplete="email">
         </div>
-      </div>
-      <div class="auth-fld">
-        <label class="auth-lbl">Şifre Tekrar</label>
-        <div class="pw-wrap">
-          <input class="auth-inp" type="password" id="re-pw2" maxlength="12" placeholder="Şifrenizi tekrar girin">
-          <button class="pw-eye" type="button" onclick="togglePw('re-pw2',this)" tabindex="-1">👁</button>
+        <div class="auth-fld">
+          <label class="auth-lbl">Şifre <span class="caps-warn" id="caps-warn" style="display:none">⚠ CAPS LOCK açık</span></label>
+          <div class="pw-wrap">
+            <input class="auth-inp" type="password" id="re-pw" maxlength="12" placeholder="6–12 karakter" autocomplete="new-password">
+            <button class="pw-eye" type="button" onclick="togglePw('re-pw',this)" tabindex="-1">👁</button>
+          </div>
         </div>
+        <div class="auth-fld">
+          <label class="auth-lbl">Şifre Tekrar</label>
+          <div class="pw-wrap">
+            <input class="auth-inp" type="password" id="re-pw2" maxlength="12" placeholder="Şifrenizi tekrar girin" autocomplete="new-password">
+            <button class="pw-eye" type="button" onclick="togglePw('re-pw2',this)" tabindex="-1">👁</button>
+          </div>
+        </div>
+        <button class="auth-btn" id="re-step1-btn" onclick="authRegisterStep1()">DEVAM ET →</button>
+        <div class="auth-err" id="re-err1"></div>
       </div>
-      <button class="auth-btn" id="re-btn" onclick="authRegister()">KAYIT OL</button>
-      <div class="auth-err" id="re-err"></div>
+
+      <!-- ADIM 2: Nick + Ülke -->
+      <div id="af-reg-step2" style="display:none">
+        <button type="button" onclick="authRegisterBack()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.82rem;margin-bottom:10px;padding:0">← Geri</button>
+        <div class="auth-fld">
+          <label class="auth-lbl">Kullanıcı Adı (Nick)</label>
+          <input class="auth-inp" type="text" id="re-nick" maxlength="15" placeholder="SuperFatih (en az 2 karakter)" autocomplete="username">
+        </div>
+        <div class="auth-fld">
+          <label class="auth-lbl">Ülken (turnuvada temsil edeceğin)</label>
+          <div class="auth-country-grid" id="auth-cgrid"></div>
+        </div>
+        <button class="auth-btn" id="re-btn" onclick="authRegister()">KAYIT OL</button>
+        <div class="auth-err" id="re-err"></div>
+      </div>
     </div>
   </div>
 </div>
