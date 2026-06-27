@@ -111,7 +111,7 @@ app.get('/api/state', async (req) => {
 
 // Task 3: Kayıt
 app.post('/api/register', {
-  schema: { body: { type: 'object', required: ['device','name','password'],
+  schema: { body: { type: 'object', required: ['device','name','password','email'],
     properties: { device:{type:'string'}, name:{type:'string'}, password:{type:'string'}, email:{type:'string'}, country:{type:'string'} } } },
   attachValidation: true,
 }, async (req) => {

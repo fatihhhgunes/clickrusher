@@ -130,8 +130,13 @@ function openAuthModal() {
 function closeAuthModal() {
   const m = $('auth-modal');
   if (m) m.classList.add('hidden');
-  $('li-err') && ($('li-err').textContent='');
-  $('re-err') && ($('re-err').textContent='');
+  $('li-err')  && ($('li-err').textContent='');
+  $('re-err')  && ($('re-err').textContent='');
+  $('re-err1') && ($('re-err1').textContent='');
+  // Kayıt formunu adım 1'e sıfırla
+  const s1=$('af-reg-step1'), s2=$('af-reg-step2');
+  if(s1) s1.style.display='';
+  if(s2) s2.style.display='none';
 }
 function authTab(tab) {
   const isLogin = tab !== 'register';
@@ -194,30 +199,51 @@ async function authLogin() {
   if (btn) btn.disabled = false;
 }
 
-async function authRegister() {
+// Adım 1: E-posta + şifre doğrulama
+let _regEmail = '', _regPw = '';
+function authRegisterStep1() {
   const email = ($('re-email')?.value || '').trim();
-  const nick  = ($('re-nick')?.value  || '').trim();
   const pw    = ($('re-pw')?.value    || '');
   const pw2   = ($('re-pw2')?.value   || '');
+  const errEl = $('re-err1');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if(errEl) errEl.textContent='Geçerli bir e-posta adresi gir'; return; }
+  if (pw.length < 6)  { if(errEl) errEl.textContent='Şifre en az 6 karakter olmalı'; return; }
+  if (pw !== pw2)     { if(errEl) errEl.textContent='Şifreler eşleşmiyor'; return; }
+  if (errEl) errEl.textContent = '';
+  _regEmail = email;
+  _regPw    = pw;
+  $('af-reg-step1').style.display = 'none';
+  $('af-reg-step2').style.display = '';
+  buildAuthCGrid();
+  $('re-nick')?.focus();
+}
+
+function authRegisterBack() {
+  $('af-reg-step2').style.display = 'none';
+  $('af-reg-step1').style.display = '';
+}
+
+// Adım 2: Nick + ülke → kayıt tamamla
+async function authRegister() {
+  const nick  = ($('re-nick')?.value || '').trim();
   const errEl = $('re-err');
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { if(errEl) errEl.textContent='Geçerli bir e-posta gir'; return; }
   if (!nick || nick.length < 2)  { if(errEl) errEl.textContent='En az 2 karakter kullanıcı adı gir'; return; }
   if (!_authSelectedCountry)     { if(errEl) errEl.textContent='Bir ülke seç'; return; }
-  if (pw.length < 6)             { if(errEl) errEl.textContent='Şifre en az 6 karakter olmalı'; return; }
-  if (pw !== pw2)                { if(errEl) errEl.textContent='Şifreler eşleşmiyor'; return; }
   const btn = $('re-btn');
   if (btn) btn.disabled = true;
   try {
-    const res  = await fetch('/api/register', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({device:deviceId,name:nick,password:pw,email,country:_authSelectedCountry})});
+    const res  = await fetch('/api/register', {method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({device:deviceId,name:nick,password:_regPw,email:_regEmail,country:_authSelectedCountry})});
     const data = await res.json();
     if (data.ok) {
       S.name    = data.name;
-      S.email   = data.email || email;
+      S.email   = data.email || _regEmail;
       S.country = _authSelectedCountry;
-      localStorage.setItem('ta26_name', data.name);
-      localStorage.setItem('ta26_pwd',  pw);
+      localStorage.setItem('ta26_name',    data.name);
+      localStorage.setItem('ta26_pwd',     _regPw);
+      localStorage.setItem('ta26_email',   S.email);
       localStorage.setItem('ta26_country', _authSelectedCountry);
-      if (S.email) localStorage.setItem('ta26_email', S.email);
+      _regEmail = ''; _regPw = '';
       closeAuthModal();
       updateUserChip();
       updateChatUI();
