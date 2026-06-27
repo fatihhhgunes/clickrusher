@@ -286,31 +286,35 @@ function doLogout() {
 }
 
 function updateUserChip() {
-  const nameEl = $('user-name');
-  const avEl   = $('user-avatar');
-  if (!nameEl) return;
-  if (S.name) {
-    nameEl.textContent = S.name;
-    const t = T[S.country];
-    if (avEl && t) {
-      avEl.innerHTML = `<img src="${FLAG_SM}${t.fc}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    } else if (avEl) {
-      avEl.textContent = S.name[0].toUpperCase();
+  const ln = localStorage.getItem('ta26_lang') || 'tr';
+  const loginText = (I18N[ln] || I18N.tr)['login-text'];
+  [['user-name', 'user-avatar'], ['user-name-m', 'user-avatar-m']].forEach(([nid, aid]) => {
+    const nameEl = $(nid);
+    const avEl   = $(aid);
+    if (!nameEl) return;
+    if (S.name) {
+      nameEl.textContent = S.name;
+      const t = T[S.country];
+      if (avEl && t) {
+        avEl.innerHTML = `<img src="${FLAG_SM}${t.fc}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      } else if (avEl) {
+        avEl.textContent = S.name[0].toUpperCase();
+      }
+    } else {
+      nameEl.textContent = loginText;
+      if (avEl) avEl.textContent = '👤';
     }
-  } else {
-    nameEl.textContent = 'Giriş Yap';
-    if (avEl) avEl.textContent = '👤';
-  }
+  });
 }
 
-// user-chip tıklaması
-(()=>{
-  const chip = $('user-chip');
+// user-chip tıklaması (desktop + mobile)
+['user-chip', 'user-chip-m'].forEach(id => {
+  const chip = $(id);
   if (chip) chip.addEventListener('click', () => {
     if (S.name) openProfile();
     else openAuthModal();
   });
-})();
+});
 
 // ── CHAT ─────────────────────────────────────────────────────────────
 const chatState = { fixId: null, polling: null, lastId: 0, cooldownUntil: 0 };
@@ -424,19 +428,151 @@ function closeProfile() {
   if (ov) ov.classList.remove('open');
 }
 
+// ── I18N ─────────────────────────────────────────────────────────────
+const I18N = {
+  tr: {
+    'load-text':          'BAYRAKLAR YÜKLENİYOR',
+    'sb-profile':         'Profilim',
+    'sb-profile-sub':     'İstatistikler ve yarış geçmişi',
+    'sb-tournament':      'Turnuva',
+    'sb-tournament-sub':  '2026 Dünya Kupası özel etkinliği',
+    'sb-leaderboard':     'Liderlik Tablosu',
+    'sb-leaderboard-sub': 'Global sıralamalar',
+    'sb-quiz-sub':        'Bilgi yarışması modunu aç',
+    'sb-sec-tournament':  'Turnuva',
+    'sb-bracket':         'Fikstür & Gruplar',
+    'sb-bracket-sub':     'Dünya Kupası 2026 tablosu',
+    'sb-sec-races':       'Açık Yarışlar',
+    'sb-no-races':        'Şu an açık yarış yok',
+    'sb-sec-settings':    'Ayarlar',
+    'sb-settings':        'Hesap Ayarları',
+    'sb-settings-sub':    'Bildirimler, gizlilik, dil',
+    'tab-bayrak':         'BAYRAK YARI<span class="tab-s">Ş</span>I',
+    'tab-gun':            'GÜNÜN KAPI<span class="tab-s">Ş</span>MASI',
+    'stat-total-lbl':     'Toplam Puan',
+    'stat-leader-lbl':    'Turnuva Lideri',
+    'nations-title':      'TÜM TAKIMLAR',
+    'gk-upcoming':        'SIRADAKİ MAÇLAR',
+    'pred-title':         '⚽ SKOR TAHMİNİ',
+    'pred-submit':        'TAHMİNİ GÖNDER',
+    'pred-locked':        '✓ TAHMİNİNİZ KAYDEDİLDİ',
+    'chat-title':         'CANLI SOHBET',
+    'chat-login':         'Sohbet için <span onclick="openAuthModal()">giriş yap</span>',
+    'lock-msg':           'Maç başlamadan katılamazsın',
+    'rush-sub':           'Top ekrana çıktığında tıkla! 30 saniyede en fazla puanı topla.',
+    'rush-start':         'BAŞLAT',
+    'rush-time-lbl':      'SÜRE',
+    'rush-score-lbl':     'PUAN',
+    'rush-combo-lbl':     'KOMBO',
+    'prof-back':          '← Geri',
+    'prof-title':         'PROFİLİM',
+    'prof-sec-account':   'Hesap',
+    'prof-logout':        'Çıkış Yap',
+    'settings-title':     '⚙️ HESAP AYARLARI',
+    'settings-notif-sec': 'Bildirimler',
+    'settings-notif-lbl': 'Push Bildirimleri',
+    'settings-notif-btn': 'İzin Ver',
+    'settings-priv-sec':  'Gizlilik',
+    'settings-privacy':   'ClickRusher oyun skorlarını ve sıralamalarını sunmak amacıyla kullanıcı adı, seçilen ülke ve puan verilerini saklar. E-posta adresiniz yalnızca hesap doğrulama ve şifre sıfırlama için kullanılır; üçüncü taraflarla paylaşılmaz.<br><br>Hesabınızı silmek için: <strong style="color:var(--cyan)">destek@clickrusher.com</strong>',
+    'lb-back':            '← Geri',
+    'lb-title':           'LİDERLİK TABLOSU',
+    'lb-banner-title':    'Desteklediğin Ülkeler & Puanların',
+    'lb-banner-empty':    'Henüz puan kazanılmadı.',
+    'lb-country-hdr':     '🌍 Ülke Sıralaması',
+    'lb-global-hdr':      '🏆 Genel Sıralama',
+    'lb-loading':         'Yükleniyor…',
+    'fp-title':           'HANGİ ÜLKE İÇİN OYNUYORSUN?',
+    'fp-sub':             'Seçtiğin ülke bu yarışmada kazandığın puanları alacak',
+    'login-text':         'Giriş Yap',
+  },
+  en: {
+    'load-text':          'LOADING FLAGS',
+    'sb-profile':         'My Profile',
+    'sb-profile-sub':     'Stats and race history',
+    'sb-tournament':      'Tournament',
+    'sb-tournament-sub':  '2026 World Cup special event',
+    'sb-leaderboard':     'Leaderboard',
+    'sb-leaderboard-sub': 'Global rankings',
+    'sb-quiz-sub':        'Open quiz mode',
+    'sb-sec-tournament':  'Tournament',
+    'sb-bracket':         'Fixtures & Groups',
+    'sb-bracket-sub':     'World Cup 2026 table',
+    'sb-sec-races':       'Open Races',
+    'sb-no-races':        'No open races right now',
+    'sb-sec-settings':    'Settings',
+    'sb-settings':        'Account Settings',
+    'sb-settings-sub':    'Notifications, privacy, language',
+    'tab-bayrak':         'FLAG RACE',
+    'tab-gun':            'DAILY BATTLE',
+    'stat-total-lbl':     'Total Score',
+    'stat-leader-lbl':    'Tournament Leader',
+    'nations-title':      'ALL TEAMS',
+    'gk-upcoming':        'UPCOMING MATCHES',
+    'pred-title':         '⚽ SCORE PREDICTION',
+    'pred-submit':        'SUBMIT PREDICTION',
+    'pred-locked':        '✓ PREDICTION SAVED',
+    'chat-title':         'LIVE CHAT',
+    'chat-login':         '<span onclick="openAuthModal()">Sign in</span> to chat',
+    'lock-msg':           "Can't join before match starts",
+    'rush-sub':           'Click when the ball appears! Score as many points in 30 seconds.',
+    'rush-start':         'START',
+    'rush-time-lbl':      'TIME',
+    'rush-score-lbl':     'SCORE',
+    'rush-combo-lbl':     'COMBO',
+    'prof-back':          '← Back',
+    'prof-title':         'MY PROFILE',
+    'prof-sec-account':   'Account',
+    'prof-logout':        'Sign Out',
+    'settings-title':     '⚙️ ACCOUNT SETTINGS',
+    'settings-notif-sec': 'Notifications',
+    'settings-notif-lbl': 'Push Notifications',
+    'settings-notif-btn': 'Allow',
+    'settings-priv-sec':  'Privacy',
+    'settings-privacy':   'ClickRusher stores username, selected country and score data to provide game scores and rankings. Your email is used only for account verification and password reset; it is not shared with third parties.<br><br>To delete your account: <strong style="color:var(--cyan)">support@clickrusher.com</strong>',
+    'lb-back':            '← Back',
+    'lb-title':           'LEADERBOARD',
+    'lb-banner-title':    'Your Countries & Scores',
+    'lb-banner-empty':    'No points earned yet.',
+    'lb-country-hdr':     '🌍 Country Rankings',
+    'lb-global-hdr':      '🏆 Global Rankings',
+    'lb-loading':         'Loading…',
+    'fp-title':           'WHICH COUNTRY ARE YOU PLAYING FOR?',
+    'fp-sub':             'The selected country will receive the points you earn in this race',
+    'login-text':         'Sign In',
+  }
+};
+
 // ── SETTINGS ─────────────────────────────────────────────────────────
 function openSettings()  { const m=$('settings-modal'); if(m) m.classList.remove('hidden'); updateNotifStatus(); }
 function closeSettings() { const m=$('settings-modal'); if(m) m.classList.add('hidden'); }
 function setUiLang(lang) {
-  document.querySelectorAll('[id^="slang-"]').forEach(b=>b.classList.remove('on'));
-  const btn=$('slang-'+lang); if(btn) btn.classList.add('on');
+  document.querySelectorAll('[id^="hlang-"]').forEach(b=>b.classList.remove('on'));
+  const btn=$('hlang-'+lang); if(btn) btn.classList.add('on');
   localStorage.setItem('ta26_lang', lang);
+  const t = I18N[lang] || I18N.tr;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (t[k] !== undefined) el.textContent = t[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.dataset.i18nHtml;
+    if (t[k] !== undefined) el.innerHTML = t[k];
+  });
+  if (!S.name) {
+    ['user-name', 'user-name-m'].forEach(id => {
+      const el = $(id); if (el) el.textContent = t['login-text'];
+    });
+  }
+  if (typeof qSetLang === 'function') qSetLang(lang);
 }
 function updateNotifStatus() {
   const el=$('notif-status');
   if(!el)return;
-  if(!('Notification' in window)){el.textContent='Tarayıcı desteklemiyor';return;}
-  el.textContent = Notification.permission==='granted'?'Bildirimler açık ✓':Notification.permission==='denied'?'Bildirimler engellendi':'İzin verilmedi';
+  const ln=localStorage.getItem('ta26_lang')||'tr';
+  const m={tr:{na:'Tarayıcı desteklemiyor',ok:'Bildirimler açık ✓',no:'Bildirimler engellendi',def:'İzin verilmedi'},en:{na:'Browser not supported',ok:'Notifications enabled ✓',no:'Notifications blocked',def:'Permission not granted'}};
+  const msgs=m[ln]||m.tr;
+  if(!('Notification' in window)){el.textContent=msgs.na;return;}
+  el.textContent=Notification.permission==='granted'?msgs.ok:Notification.permission==='denied'?msgs.no:msgs.def;
 }
 function requestNotifPerms() {
   if(!('Notification' in window))return;
@@ -533,4 +669,10 @@ function checkPendingRace(){
 document.addEventListener('keydown', e => {
   const w=$('caps-warn');
   if(w) w.style.display=e.getModifierState('CapsLock')?'':'none';
+});
+
+// ── INIT LANG ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('ta26_lang') || 'tr';
+  setUiLang(saved);
 });
