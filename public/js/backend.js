@@ -127,16 +127,23 @@ function openAuthModal() {
   if (m) m.classList.remove('hidden');
   buildAuthCGrid();
 }
-function closeAuthModal() {
-  const m = $('auth-modal');
-  if (m) m.classList.add('hidden');
-  $('li-err')  && ($('li-err').textContent='');
-  $('re-err')  && ($('re-err').textContent='');
-  $('re-err1') && ($('re-err1').textContent='');
-  // Kayıt formunu adım 1'e sıfırla
+function _resetRegisterForm() {
   const s1=$('af-reg-step1'), s2=$('af-reg-step2');
   if(s1) s1.style.display='';
   if(s2) s2.style.display='none';
+  $('re-err')  && ($('re-err').textContent='');
+  $('re-err1') && ($('re-err1').textContent='');
+  // Ülke seçimini sıfırla
+  _authSelectedCountry = '';
+  const grid=$('auth-cgrid');
+  if(grid) grid.querySelectorAll('.acc.sel').forEach(x=>x.classList.remove('sel'));
+}
+
+function closeAuthModal() {
+  const m = $('auth-modal');
+  if (m) m.classList.add('hidden');
+  $('li-err') && ($('li-err').textContent='');
+  _resetRegisterForm();
 }
 function authTab(tab) {
   const isLogin = tab !== 'register';
@@ -144,6 +151,7 @@ function authTab(tab) {
   $('atab-register') && $('atab-register').classList.toggle('on', !isLogin);
   $('af-login')      && ($('af-login').style.display    = isLogin ? '' : 'none');
   $('af-register')   && ($('af-register').style.display = isLogin ? 'none' : '');
+  if (isLogin) _resetRegisterForm();
 }
 
 function buildAuthCGrid() {
@@ -223,12 +231,15 @@ function authRegisterBack() {
   $('af-reg-step1').style.display = '';
 }
 
+const NICK_RE = /^[a-zA-Z0-9ğüşıöçĞÜŞİÖÇ_\-]{2,15}$/u;
+
 // Adım 2: Nick + ülke → kayıt tamamla
 async function authRegister() {
   const nick  = ($('re-nick')?.value || '').trim();
   const errEl = $('re-err');
-  if (!nick || nick.length < 2)  { if(errEl) errEl.textContent='En az 2 karakter kullanıcı adı gir'; return; }
-  if (!_authSelectedCountry)     { if(errEl) errEl.textContent='Bir ülke seç'; return; }
+  if (!nick || nick.length < 2)    { if(errEl) errEl.textContent='En az 2 karakter kullanıcı adı gir'; return; }
+  if (!NICK_RE.test(nick))         { if(errEl) errEl.textContent='Sadece harf, rakam, _ ve - kullanabilirsin (boşluk yok)'; return; }
+  if (!_authSelectedCountry)       { if(errEl) errEl.textContent='Bir ülke seç'; return; }
   const btn = $('re-btn');
   if (btn) btn.disabled = true;
   try {
@@ -248,7 +259,7 @@ async function authRegister() {
       updateUserChip();
       updateChatUI();
     } else {
-      const msgs = {taken:'Bu kullanıcı adı alınmış',email_taken:'Bu e-posta zaten kayıtlı',badword:'Uygunsuz kullanıcı adı',invalid_password:'Şifre geçersiz'};
+      const msgs = {taken:'Bu kullanıcı adı alınmış',email_taken:'Bu e-posta zaten kayıtlı',badword:'Uygunsuz kullanıcı adı',invalid_password:'Şifre geçersiz',invalid:'Kullanıcı adı geçersiz (harf, rakam, _ ve - kullanabilirsin)',email_required:'E-posta zorunludur'};
       if (errEl) errEl.textContent = msgs[data.reason] || data.reason || 'Kayıt başarısız';
     }
   } catch { if (errEl) errEl.textContent = 'Bağlantı hatası'; }
